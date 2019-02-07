@@ -4,7 +4,8 @@
   "description": "A README badge for GitHub Actions status",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -18,5 +19,8 @@
   "homepage": "https://github.com/CultureHQ/github-actions-badge#readme",
   "devDependencies": {
     "express": "^4.16.4"
+  },
+  "dependencies": {
+    "jest": "^24.1.0"
   }
 }

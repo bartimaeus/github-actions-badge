@@ -4,13 +4,19 @@ const app = express();
 const getRedirect = require("./getRedirect");
 
 app.use((request, response, next) => {
-  console.log(`[${new Date().toUTCString()}] ${request.method} ${request.path}`);
+  console.log(
+    `[${new Date().toUTCString()}] ${request.method} ${request.path}`
+  );
 
   next();
 });
 
 app.get("/:owner/:repo", (request, response) => {
-  getRedirect(request.params.owner, request.params.repo, request.query)
+  getRedirect({
+    owner: request.params.owner,
+    repo: request.params.repo,
+    options: request.query
+  })
     .then(redirect => {
       response.header("Cache-Control", "no-cache");
       response.redirect(303, redirect);
