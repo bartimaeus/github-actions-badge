@@ -1,6 +1,6 @@
 # github-actions-badge
 
-![Actions Status](https://a20ybyqqo6.execute-api.us-east-1.amazonaws.com/production/badge/bartimaeus/github-actions-badge?)
+![Actions Status](https://a20ybyqqo6.execute-api.us-east-1.amazonaws.com/production/badge/bartimaeus/github-actions-badge)
 
 This is a small AWS lambda that renders a README badge based on the status of your Github Actions workflow. You can add the badge to your README by including:
 
