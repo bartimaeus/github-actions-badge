@@ -1,5 +1,7 @@
 # github-actions-badge
 
+![Actions Status](https://a20ybyqqo6.execute-api.us-east-1.amazonaws.com/production/badge/bartimaeus/github-actions-badge)
+
 This is a small AWS lambda that renders a README badge based on the status of your Github Actions workflow. You can add the badge to your README by including:
 
 ```
@@ -14,11 +16,11 @@ https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/CultureH
 
 The badge variants look like:
 
-* ![Error](https://img.shields.io/badge/GitHub_Actions-error-red.svg?logo=github&logoColor=white)
-* ![Failure](https://img.shields.io/badge/GitHub_Actions-failure-lightgrey.svg?logo=github&logoColor=white)
-* ![Pending](https://img.shields.io/badge/GitHub_Actions-pending-yellow.svg?logo=github&logoColor=white)
-* ![Success](https://img.shields.io/badge/GitHub_Actions-success-green.svg?logo=github&logoColor=white)
-* ![No Runs](https://img.shields.io/badge/GitHub_Actions-no_runs-lightgrey.svg?logo=github&logoColor=white)
+- ![Error](https://img.shields.io/badge/GitHub_Actions-error-red.svg?logo=github&logoColor=white)
+- ![Failure](https://img.shields.io/badge/GitHub_Actions-failure-lightgrey.svg?logo=github&logoColor=white)
+- ![Pending](https://img.shields.io/badge/GitHub_Actions-pending-yellow.svg?logo=github&logoColor=white)
+- ![Success](https://img.shields.io/badge/GitHub_Actions-success-green.svg?logo=github&logoColor=white)
+- ![No Runs](https://img.shields.io/badge/GitHub_Actions-no_runs-lightgrey.svg?logo=github&logoColor=white)
 
 ## Options
 
@@ -29,6 +31,10 @@ For instance, if you wanted to change the style to `flat-square`, you could pass
 ```
 ![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/{owner}/{repo}?style=flat-square)
 ```
+
+## Private Repos
+
+Badges for private repositories need to make sure that the lambda function has your GitHub access token as an environment variable.
 
 ## Development
 

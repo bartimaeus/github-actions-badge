@@ -3,7 +3,7 @@ const https = require("https");
 const getCheckSuites = (owner, repo, accessToken) =>
   new Promise((resolve, reject) => {
     let path = `/repos/${owner}/${repo}/commits/master/check-suites`;
-    if (accessToken) {
+    if (accessToken && accessToken.length > 0) {
       path = `${path}?access_token=${accessToken}`;
     }
 

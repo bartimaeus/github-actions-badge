@@ -1,21 +1,27 @@
 service: github-actions-badge
 
+# Load custom settings
+custom: ${file(./settings.json)}
+
 provider:
   name: aws
   runtime: nodejs8.10
   stage: production
-  region: us-west-2
+  region: ${self:custom.region}
+  accessToken: ${self:custom.accessToken}
 
 package:
   exclude:
-  - coverage/
-  - server.js
-  - test/
+    - coverage/
+    - server.js
+    - test/
 
 functions:
   badge:
     handler: handler.handle
+    environment:
+      GITHUB_ACCESS_TOKEN: ${self:provider.accessToken}
     events:
-    - http:
-        path: badge/{owner}/{repo}
-        method: get
+      - http:
+          path: badge/{owner}/{repo}
+          method: get
