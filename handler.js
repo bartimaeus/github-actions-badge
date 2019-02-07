@@ -1,9 +1,24 @@
 const getRedirect = require("./getRedirect");
 
+const parseIsPrivate = privateParam => {
+  if (!privateParam) return false;
+
+  if (
+    privateParam.toLowerCase() === "yes" ||
+    privateParam.toLowerCase() === "true" ||
+    privateParam.toLowerCase() === "private"
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 const handle = (event, context, callback) =>
   getRedirect({
     owner: event.pathParameters.owner,
     repo: event.pathParameters.repo,
+    isPrivate: parseIsPrivate(event.pathParameters.isPrivate),
     accessToken: process.env.GITHUB_ACCESS_TOKEN,
     options: event.queryStringParameters
   })

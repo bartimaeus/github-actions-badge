@@ -23,5 +23,5 @@ functions:
       GITHUB_ACCESS_TOKEN: ${self:provider.accessToken}
     events:
       - http:
-          path: badge/{owner}/{repo}
+          path: badge/{owner}/{repo}/{isPrivate}
           method: get

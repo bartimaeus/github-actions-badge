@@ -1,9 +1,9 @@
 const https = require("https");
 
-const getCheckSuites = (owner, repo, accessToken) =>
+const getCheckSuites = (owner, repo, isPrivate, accessToken) =>
   new Promise((resolve, reject) => {
     let path = `/repos/${owner}/${repo}/commits/master/check-suites`;
-    if (accessToken && accessToken.length > 0) {
+    if (isPrivate && accessToken && accessToken.length > 0) {
       path = `${path}?access_token=${accessToken}`;
     }
 
@@ -98,8 +98,14 @@ const getRedirectURL = options => status => {
   return `${base}-${normal}-${STATUS_COLORS[normal]}.svg${getQuery(options)}`;
 };
 
-const getRedirect = ({ owner, repo, accessToken = undefined, options = {} }) =>
-  getCheckSuites(owner, repo, accessToken)
+const getRedirect = ({
+  owner,
+  repo,
+  isPrivate = false,
+  accessToken = undefined,
+  options = {}
+}) =>
+  getCheckSuites(owner, repo, isPrivate, accessToken)
     .then(getStatus)
     .then(getRedirectURL(options || {}));
 
