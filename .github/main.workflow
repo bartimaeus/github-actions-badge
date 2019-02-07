@@ -1,4 +1,4 @@
-workflow "Badge Status" {
+workflow "Run Tests" {
   on = "push"
   resolves = ["Test"]
 }
