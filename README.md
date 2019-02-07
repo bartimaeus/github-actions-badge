@@ -34,7 +34,24 @@ For instance, if you wanted to change the style to `flat-square`, you could pass
 
 ## Private Repos
 
-Badges for private repositories need to make sure that the lambda function has your GitHub access token as an environment variable.
+Badges for private repositories need to make sure that the lambda function has your GitHub access token as an environment variable and that the url contains the private param.
+
+1. GitHub access token in `settings.json`
+
+    ```json
+    {
+      "region": "us-west-2",
+      "accessToken": "[replace-with-github-access-token]"
+    }
+    ```
+
+
+2. Private parameter should be supplied after the repository name
+
+    ```
+    ![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/{owner}/{repo}?private=true)
+    ```
+
 
 ## Development
 
