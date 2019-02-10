@@ -1,0 +1,200 @@
+Description: This template deploys an express node application running as an ECS service
+
+Parameters:
+  Cluster:
+    Description: Please provide the ECS Cluster ID that this service should run on
+    Type: String
+
+  DesiredCount:
+    Description: Number of tasks ECS should run across your cluster
+    Type: Number
+    Default: 1
+
+  DomainName:
+    Description: The domain name of the Application
+    Type: String
+
+  GitHubAccessToken:
+    Description: The access token is needed to request details from GitHub's API
+    Type: String
+
+  HttpListener:
+    Description: The HTTP Application Load Balancer listener to register with
+    Type: String
+
+  HttpsListener:
+    Description: The HTTPS Application Load Balancer listener to register with
+    Type: String
+
+  HttpListenerRulePriority:
+    Description: The priority of the first listener rule we'll create for node
+    Type: Number
+    Default: 20
+
+  HttpsListenerRulePriority:
+    Description: The priority of the first listener rule we'll create for node
+    Type: Number
+    Default: 30
+
+  NodeEnvironment:
+    Description: The node environment that the docker image should run
+    Type: String
+    Default: production
+
+  NodeMemory:
+    Description: The mimimum size for ECS to allocate of system memory
+    Type: Number
+    Default: 128
+
+  NodePort:
+    Description: The container port used for this service
+    Type: Number
+    Default: 3000
+
+  VPC:
+    Description: The VPC that the ECS cluster is deployed to
+    Type: AWS::EC2::VPC::Id
+
+Resources:
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HttpListenerRule
+      - HttpsListenerRule
+    Properties:
+      Cluster: !Ref Cluster
+      Role: !Ref ServiceRole
+      ServiceName: github-actions-badge
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: !Ref DesiredCount
+      PlacementStrategies:
+        - Field: attribute:ecs.availability-zone
+          Type: spread
+        - Field: instanceId
+          Type: spread
+      TaskDefinition: !Ref TaskDefinition
+      LoadBalancers:
+        - ContainerName: !Sub ${NodeEnvironment}-github-actions-badge
+          ContainerPort: !Ref NodePort
+          TargetGroupArn: !Ref TargetGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${NodeEnvironment}-github-actions-badge
+      NetworkMode: bridge
+      ContainerDefinitions:
+        - Name: !Sub ${NodeEnvironment}-github-actions-badge
+          Essential: true
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.us-east-1.amazonaws.com/github-actions-badge:latest
+          Command: ["node", "index.js"]
+          MemoryReservation: !Ref NodeMemory
+          PortMappings:
+            - ContainerPort: !Ref NodePort
+              Protocol: tcp
+          WorkingDirectory: "/app"
+          Environment:
+            - Name: GITHUB_ACCESS_TOKEN
+              Value: !Ref GitHubAccessToken
+            - Name: NODE_ENV
+              Value: production
+            - Name: PORT
+              Value: !Ref NodePort
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref AWS::StackName
+              awslogs-region: !Ref AWS::Region
+
+  CloudWatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref AWS::StackName
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Port: 80
+      Protocol: HTTP
+      Matcher:
+        HttpCode: 200-299
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "20"
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /healthcheck
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+
+  # Another possible field type is `path-pattern`
+  HttpListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HttpListener
+      Priority: !Ref HttpListenerRulePriority
+      Conditions:
+        - Field: host-header
+          Values:
+            - !Sub "github-status.${DomainName}"
+      Actions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+
+  HttpsListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Priority: !Ref HttpsListenerRulePriority
+      Conditions:
+        - Field: host-header
+          Values:
+            - !Sub "github-status.${DomainName}"
+      Actions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+
+  # This IAM Role grants the service access to register/unregister with the
+  # Application Load Balancer (ALB). It is based on the default documented here:
+  # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+  ServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ecs-service-${AWS::StackName}
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        }
+      Policies:
+        - PolicyName: !Sub ecs-service-${AWS::StackName}
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement":
+                [
+                  {
+                    "Effect": "Allow",
+                    "Action":
+                      [
+                        "ec2:AuthorizeSecurityGroupIngress",
+                        "ec2:Describe*",
+                        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                        "elasticloadbalancing:Describe*",
+                        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                        "elasticloadbalancing:DeregisterTargets",
+                        "elasticloadbalancing:DescribeTargetGroups",
+                        "elasticloadbalancing:DescribeTargetHealth",
+                        "elasticloadbalancing:RegisterTargets",
+                      ],
+                    "Resource": "*",
+                  },
+                ],
+            }

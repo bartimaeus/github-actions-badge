@@ -1,0 +1,10 @@
+.github
+.DS_Store
+.serverless
+docker-compose.yml
+handler.js
+LICENSE
+README.md
+serverless.yml
+settings.*
+yarn-error.log
